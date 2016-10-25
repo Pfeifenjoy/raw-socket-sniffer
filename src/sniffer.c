@@ -6,6 +6,7 @@
 #include <pcap.h>
 
 #define BUFFER_SIZE 9000
+#define PRINT_ROW_LENGTH 15
 
 static volatile bool running = true;
 static pcap_t *pcap_handle;
@@ -19,13 +20,38 @@ void sigint_handler(int sig) {
 void print_receive_packet(const u_char *packet, int length) {
     printf("receiving package of length: %d\n", length);
 
-    int i = 0;
+    int i = 0; //row iterator
 
-    while(length > i) {
-        printf("%c", packet[i++]);
-        if(i % 5 == 0) {
-            printf("\n");
+    while(i < length) {
+        int j; //column iterator
+
+        j = 0;
+        while(j++ < PRINT_ROW_LENGTH) {
+            //print hex values if exist
+            const int position = i + j;
+            if(position < length) {
+                printf("%02x ", packet[position]);
+            } else {
+                printf("   "); // fill up
+            }
         }
+
+        //seperator
+        printf("| ");
+
+        j = 0;
+        while(j++ < PRINT_ROW_LENGTH) {
+            //print character values
+            const int position = i + j;
+            if(position < length) {
+                printf("%c", packet[position]);
+            }
+            else { /* skip */ }
+        }
+
+        printf("\n");
+
+        i += PRINT_ROW_LENGTH;
     }
 }
 

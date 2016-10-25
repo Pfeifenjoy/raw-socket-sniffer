@@ -2,36 +2,62 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#include <signal.h>
+#include <pcap.h>
 
 #define BUFFER_SIZE 9000
 
+static volatile bool running = true;
+static pcap_t *pcap_handle;
+
+void sigint_handler(int sig) {
+    printf("closing sockets.");
+    pcap_close(pcap_handle);
+    exit(EXIT_SUCCESS);
+}
+
+void print_receive_packet(const u_char *packet, int length) {
+    printf("receiving package of length: %d\n", length);
+}
+
+void fatal(const char *error_message, const char *error_buffer) {
+    printf("Error: %s\n", error_message);
+    printf("Error Buffer: %s", error_buffer); 
+    exit(EXIT_FAILURE);
+}
+
 int main(int argc, char *argv[])
 {
-    
-    int sockfd;
+    struct pcap_pkthdr header;
+    const u_char *packet;
 
-    printf("getting a socket.\n");
-    sockfd = socket(PF_INET, SOCK_RAW, IPPROTO_TCP);
+    char error_buffer[PCAP_ERRBUF_SIZE];
 
-    if(sockfd == -1) {
-        printf("Error: in socket");
-        return EXIT_FAILURE;
+    char *device;
+
+    memset(error_buffer, 0, PCAP_ERRBUF_SIZE);
+    device = pcap_lookupdev(error_buffer);
+
+    if(device == NULL) {
+        fatal("pcap_lookupdev", error_buffer);
     }
 
-    printf("Starting to sniff...\n");
+    printf("Starting to sniff on device %s ...\n", device);
 
-    u_char buffer[BUFFER_SIZE];
-    int packet = 1;
+    memset(error_buffer, 0, PCAP_ERRBUF_SIZE);
+    pcap_handle = pcap_open_live(device, 4096, 1, 0, error_buffer);
 
-    while(true) {
-        memset(buffer, 0, BUFFER_SIZE);
-        printf("listening for the %d. packet...\n", packet++);
-        int recv_length = recv(sockfd, buffer, BUFFER_SIZE, 0);
-        printf("Got a %d byte packet:\n%s\n", recv_length, buffer);
+    if(pcap_handle == NULL) {
+        fatal("pcap_open_live", error_buffer);
     }
+
+    signal(SIGINT, sigint_handler);
+
+    while(running) {
+        packet = pcap_next(pcap_handle, &header);
+        print_receive_packet(packet, header.len);
+    }
+
 
     return EXIT_SUCCESS;
 }

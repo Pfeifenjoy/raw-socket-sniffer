@@ -8,6 +8,10 @@
 #define BUFFER_SIZE 9000
 #define PRINT_ROW_LENGTH 15
 
+#define RESET "\x1B[0m"
+#define RED "\x1B[31m"
+#define YELLOW "\x1B[33m"
+
 static volatile bool running = true;
 static pcap_t *pcap_handle;
 
@@ -30,7 +34,7 @@ void print_receive_packet(const u_char *packet, int length) {
             //print hex values if exist
             const int position = i + j;
             if(position < length) {
-                printf("%02x ", packet[position]);
+                printf("%s%02x%s ", YELLOW, packet[position], RESET);
             } else {
                 printf("   "); // fill up
             }
@@ -58,11 +62,13 @@ void print_receive_packet(const u_char *packet, int length) {
 
         i += PRINT_ROW_LENGTH;
     }
+
+    putchar('\n');
 }
 
 void fatal(const char *error_message, const char *error_buffer) {
-    printf("Error: %s\n", error_message);
-    printf("Error Buffer: %s", error_buffer); 
+    printf("%sError: %s\n", RED, error_message);
+    printf("%sError Buffer: %s", RED, error_buffer); 
     exit(EXIT_FAILURE);
 }
 

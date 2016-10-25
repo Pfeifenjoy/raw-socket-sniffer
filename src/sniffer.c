@@ -1,3 +1,4 @@
+#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,7 +50,7 @@ void print_receive_packet(const u_char *packet, int length) {
             const int position = i + j;
             if(position < length) {
                 u_char c = packet[position];
-                if(c >= 32 && c <= 255) {
+                if(c >= 32 && c <= 127) {
                     putchar(c);
                 } else {
                     putchar('.');

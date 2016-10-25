@@ -18,6 +18,15 @@ void sigint_handler(int sig) {
 
 void print_receive_packet(const u_char *packet, int length) {
     printf("receiving package of length: %d\n", length);
+
+    int i = 0;
+
+    while(length > i) {
+        printf("%c", packet[i++]);
+        if(i % 5 == 0) {
+            printf("\n");
+        }
+    }
 }
 
 void fatal(const char *error_message, const char *error_buffer) {

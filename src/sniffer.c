@@ -44,7 +44,12 @@ void print_receive_packet(const u_char *packet, int length) {
             //print character values
             const int position = i + j;
             if(position < length) {
-                printf("%c", packet[position]);
+                u_char c = packet[position];
+                if(c >= 32 && c <= 255) {
+                    putchar(c);
+                } else {
+                    putchar('.');
+                }
             }
             else { /* skip */ }
         }

@@ -1,4 +1,3 @@
-#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,7 +16,7 @@ static volatile bool running = true;
 static pcap_t *pcap_handle;
 
 void sigint_handler(int sig) {
-    printf("closing sockets.");
+    printf("%s\nclosing sockets.", RESET);
     pcap_close(pcap_handle);
     exit(EXIT_SUCCESS);
 }

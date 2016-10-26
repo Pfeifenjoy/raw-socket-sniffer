@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <signal.h>
 #include <pcap.h>
+#include <net/ethernet.h>
 
 #define BUFFER_SIZE 9000
 #define PRINT_ROW_LENGTH 15
@@ -11,6 +12,7 @@
 #define RESET "\x1B[0m"
 #define RED "\x1B[31m"
 #define YELLOW "\x1B[33m"
+#define GRAY "\x1B[90m"
 
 static volatile bool running = true;
 static pcap_t *pcap_handle;
@@ -52,7 +54,9 @@ void print_receive_packet(const u_char *packet, int length) {
                 if(c >= 32 && c <= 127) {
                     putchar(c);
                 } else {
+                    printf(GRAY);
                     putchar('.');
+                    printf(RESET);
                 }
             }
             else { /* skip */ }
@@ -70,6 +74,21 @@ void fatal(const char *error_message, const char *error_buffer) {
     printf("%sError: %s\n", RED, error_message);
     printf("%sError Buffer: %s", RED, error_buffer); 
     exit(EXIT_FAILURE);
+}
+
+void print_mac_address(const u_char *address) {
+    short i = 0;
+    while(i++ < ETHER_ADDR_LEN - 1) {
+        printf("%02x:", address[i]);
+    }
+    printf("%02x", address[i]);
+}
+
+void print_from_to_mac(const struct ether_header *header) {
+    print_mac_address(header->ether_dhost);
+    printf(" -> ");
+    print_mac_address(header->ether_shost);
+    printf("\n");
 }
 
 int main(int argc, char *argv[])
@@ -99,8 +118,12 @@ int main(int argc, char *argv[])
 
     signal(SIGINT, sigint_handler);
 
+    const struct ether_header *eth_header;
+
     while(running) {
         packet = pcap_next(pcap_handle, &header);
+        eth_header = (struct ether_header *) packet;
+        print_from_to_mac(eth_header);
         print_receive_packet(packet, header.len);
     }
 

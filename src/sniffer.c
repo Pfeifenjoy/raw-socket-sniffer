@@ -49,6 +49,5 @@ int main(int argc, char *argv[])
         dump(packet, header.len);
     }
 
-
     return EXIT_SUCCESS;
 }

@@ -28,7 +28,7 @@ void print_end_message() {
     //therefore the color must be reset, because it might have a different color 
     //when the interrupt is thrown
     printf(RESET);
-    printf("closing socket");
+    printf("\nclosing socket\n");
     printf("stopping sniffing.");
 }
 
